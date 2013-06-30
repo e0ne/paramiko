@@ -452,7 +452,7 @@ class SSHClient (object):
                 two_factor = (allowed_types == ['password'])
                 if not two_factor:
                     return
-            except SSHException, e:
+            except SSHException as e:
                 saved_exception = e
 
         if not two_factor:
@@ -466,7 +466,7 @@ class SSHClient (object):
                         if not two_factor:
                             return
                         break
-                    except SSHException, e:
+                    except SSHException as e:
                         saved_exception = e
 
         if not two_factor and allow_agent:
@@ -482,7 +482,7 @@ class SSHClient (object):
                     if not two_factor:
                         return
                     break
-                except SSHException, e:
+                except SSHException as e:
                     saved_exception = e
 
         if not two_factor:
@@ -514,16 +514,16 @@ class SSHClient (object):
                     if not two_factor:
                         return
                     break
-                except SSHException, e:
+                except SSHException as e:
                     saved_exception = e
-                except IOError, e:
+                except IOError as e:
                     saved_exception = e
 
         if password is not None:
             try:
                 self._transport.auth_password(username, password)
                 return
-            except SSHException, e:
+            except SSHException as e:
                 saved_exception = e
         elif two_factor:
             raise SSHException('Two-factor authentication requires a password')
