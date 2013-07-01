@@ -21,10 +21,17 @@ Implementation of an SSH2 "message".
 """
 
 import struct
-import cStringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 
 from paramiko import util
 
+import six
+if six.PY3:
+    long = int
 
 class Message (object):
     """
@@ -46,9 +53,9 @@ class Message (object):
         @type content: string
         """
         if content != None:
-            self.packet = cStringIO.StringIO(content)
+            self.packet = StringIO(content)
         else:
-            self.packet = cStringIO.StringIO()
+            self.packet = StringIO()
 
     def __str__(self):
         """
@@ -277,7 +284,7 @@ class Message (object):
         elif type(i) is int:
             return self.add_int(i)
         elif type(i) is long:
-            if i > 0xffffffffL:
+            if i > long(0xffffffff):
                 return self.add_mpint(i)
             else:
                 return self.add_int(i)

@@ -48,6 +48,11 @@ from paramiko.ssh_exception import (SSHException, BadAuthenticationType,
     ChannelException, ProxyCommandFailure)
 from paramiko.util import retry_on_signal
 
+
+import six
+if six.PY3:
+    long = int
+
 from Crypto import Random
 from Crypto.Cipher import Blowfish, AES, DES3, ARC4
 from Crypto.Hash import SHA, MD5
@@ -78,7 +83,7 @@ class SecurityOptions (object):
     C{ValueError} will be raised.  If you try to assign something besides a
     tuple to one of the fields, C{TypeError} will be raised.
     """
-    __slots__ = [ 'ciphers', 'digests', 'key_types', 'kex', 'compression', '_transport' ]
+    # __slots__ = [ 'ciphers', 'digests', 'key_types', 'kex', 'compression', '_transport' ]
 
     def __init__(self, transport):
         self._transport = transport
@@ -374,7 +379,7 @@ class Transport (threading.Thread):
 
         @rtype: str
         """
-        out = '<paramiko.Transport at %s' % hex(long(id(self)) & 0xffffffffL)
+        out = '<paramiko.Transport at %s' % hex(long(id(self)) & long(0xffffffff))
         if not self.active:
             out += ' (unconnected)'
         else:
@@ -691,7 +696,7 @@ class Transport (threading.Thread):
         """
         return self.open_channel('auth-agent@openssh.com')
 
-    def open_forwarded_tcpip_channel(self, (src_addr, src_port), (dest_addr, dest_port)):
+    def open_forwarded_tcpip_channel(self, src_addr, dest_addr):
         """
         Request a new channel back to the client, of type C{"forwarded-tcpip"}.
         This is used after a client has requested port forwarding, for sending
@@ -702,7 +707,7 @@ class Transport (threading.Thread):
         @param dest_addr: local (server) connected address
         @param dest_port: local (server) connected port
         """
-        return self.open_channel('forwarded-tcpip', (dest_addr, dest_port), (src_addr, src_port))
+        return self.open_channel('forwarded-tcpip', dest_addr, src_addr)
 
     def open_channel(self, kind, dest_addr=None, src_addr=None):
         """
@@ -811,7 +816,7 @@ class Transport (threading.Thread):
         if port == 0:
             port = response.get_int()
         if handler is None:
-            def default_handler(channel, (src_addr, src_port), (dest_addr, dest_port)):
+            def default_handler(channel, src_addr, dest_addr):
                 self._queue_incoming_channel(channel)
             handler = default_handler
         self._tcp_handler = handler
@@ -1511,7 +1516,7 @@ class Transport (threading.Thread):
         # only called if a channel has turned on x11 forwarding
         if handler is None:
             # by default, use the same mechanism as accept()
-            def default_handler(channel, (src_addr, src_port)):
+            def default_handler(channel, src_addr):
                 self._queue_incoming_channel(channel)
             self._x11_handler = default_handler
         else:
@@ -1546,9 +1551,9 @@ class Transport (threading.Thread):
         # active=True occurs before the thread is launched, to avoid a race
         _active_threads.append(self)
         if self.server_mode:
-            self._log(DEBUG, 'starting thread (server mode): %s' % hex(long(id(self)) & 0xffffffffL))
+            self._log(DEBUG, 'starting thread (server mode): %s' % hex(long(id(self)) & long(0xffffffff)))
         else:
-            self._log(DEBUG, 'starting thread (client mode): %s' % hex(long(id(self)) & 0xffffffffL))
+            self._log(DEBUG, 'starting thread (client mode): %s' % hex(long(id(self)) & long(0xffffffff)))
         try:
             try:
                 self.packetizer.write_all(self.local_version + '\r\n')

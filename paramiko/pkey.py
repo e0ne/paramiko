@@ -304,6 +304,12 @@ class PKey (object):
         # if we trudged to the end of the file, just try to cope.
         try:
             data = base64.decodestring(''.join(lines[start:end]))
+
+            print('--------- %s' % type(data))
+        except TypeError:
+            data = str(base64.b64decode(bytes(''.join(lines[start:end]),'ascii' )))
+            data = ''.join(lines[start:end])
+            print('--------- %s' % data)
         except base64.binascii.Error as e:
             raise SSHException('base64 decoding error: ' + str(e))
         if 'proc-type' not in headers:
@@ -346,9 +352,9 @@ class PKey (object):
 
         @raise IOError: if there was an error writing the file.
         """
-        f = open(filename, 'w', 0600)
+        f = open(filename, 'w', 0o600)
         # grrr... the mode doesn't always take hold
-        os.chmod(filename, 0600)
+        os.chmod(filename, 0o600)
         self._write_private_key(tag, f, data, password)
         f.close()
 

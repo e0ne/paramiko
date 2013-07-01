@@ -23,7 +23,11 @@ L{HostKeys}
 import base64
 import binascii
 from Crypto.Hash import SHA, HMAC
-import UserDict
+
+try:
+    from UserDict import DictMixin
+except ImportError:
+    from collections import MutableMapping as DictMixin
 
 from paramiko.common import *
 from paramiko.dsskey import DSSKey
@@ -105,7 +109,7 @@ class HostKeyEntry:
         return '<HostKeyEntry %r: %r>' % (self.hostnames, self.key)
 
 
-class HostKeys (UserDict.DictMixin):
+class HostKeys (DictMixin):
     """
     Representation of an openssh-style "known hosts" file.  Host keys can be
     read from one or more files, and then individual hosts can be looked up to
@@ -211,7 +215,7 @@ class HostKeys (UserDict.DictMixin):
         @return: keys associated with this host (or C{None})
         @rtype: dict(str, L{PKey})
         """
-        class SubDict (UserDict.DictMixin):
+        class SubDict (DictMixin):
             def __init__(self, hostname, entries, hostkeys):
                 self._hostname = hostname
                 self._entries = entries
