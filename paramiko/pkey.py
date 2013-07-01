@@ -305,11 +305,9 @@ class PKey (object):
         try:
             data = base64.decodestring(''.join(lines[start:end]))
 
-            print('--------- %s' % type(data))
         except TypeError:
             data = str(base64.b64decode(bytes(''.join(lines[start:end]),'ascii' )))
             data = ''.join(lines[start:end])
-            print('--------- %s' % data)
         except base64.binascii.Error as e:
             raise SSHException('base64 decoding error: ' + str(e))
         if 'proc-type' not in headers:
